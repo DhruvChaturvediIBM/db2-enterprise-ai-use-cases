@@ -1,0 +1,24 @@
+-- UC01: Enterprise Knowledge Assistant — SQL Validation
+-- Run these in IBM Db2 Developer Extension to verify state
+
+-- 1. Confirm documents were loaded
+SELECT COUNT(*) AS TOTAL_DOCUMENTS
+FROM AI_DEMO.KNOWLEDGE_BASE;
+
+-- 2. Inspect first 10 rows
+SELECT DOCUMENT_ID, TITLE, DOCUMENT_TYPE, DEPARTMENT, REGION, STATUS
+FROM AI_DEMO.KNOWLEDGE_BASE
+FETCH FIRST 10 ROWS ONLY;
+
+-- 3. Confirm VECTOR column is populated (check embedding size)
+SELECT DOCUMENT_ID,
+       LENGTH(EMBEDDING) AS VECTOR_BYTES,
+       DOCUMENT_TYPE
+FROM AI_DEMO.KNOWLEDGE_BASE
+FETCH FIRST 5 ROWS ONLY;
+
+-- 4. Count documents by type
+SELECT DOCUMENT_TYPE, COUNT(*) AS COUNT
+FROM AI_DEMO.KNOWLEDGE_BASE
+GROUP BY DOCUMENT_TYPE
+ORDER BY COUNT DESC;

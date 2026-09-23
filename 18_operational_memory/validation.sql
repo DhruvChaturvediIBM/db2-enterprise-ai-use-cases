@@ -1,0 +1,29 @@
+-- UC18: Enterprise Operational Memory — SQL Validation
+
+-- 1. Confirm operational memory table exists and is populated
+SELECT COUNT(*) AS TOTAL_MEMORIES
+FROM AI_DEMO.OPERATIONAL_MEMORY;
+
+-- 2. Review memory entries with resolution previews
+SELECT DOCUMENT_ID, TITLE, EFFECTIVE_DATE,
+       SUBSTR(CONTENT, 1, 120) AS RESOLUTION_PREVIEW
+FROM AI_DEMO.OPERATIONAL_MEMORY
+ORDER BY EFFECTIVE_DATE DESC;
+
+-- 3. Memory entries by domain (service/department)
+SELECT DEPARTMENT, COUNT(*) AS COUNT
+FROM AI_DEMO.OPERATIONAL_MEMORY
+GROUP BY DEPARTMENT
+ORDER BY COUNT DESC;
+
+-- 4. Verify embeddings are stored for all memory entries
+SELECT COUNT(*) AS TOTAL,
+       COUNT(CASE WHEN EMBEDDING IS NOT NULL THEN 1 END) AS WITH_EMBEDDING
+FROM AI_DEMO.OPERATIONAL_MEMORY;
+-- Expected: TOTAL = WITH_EMBEDDING
+
+-- 5. Most recently added memories (confirms write path works)
+SELECT DOCUMENT_ID, TITLE, CREATED_AT
+FROM AI_DEMO.OPERATIONAL_MEMORY
+ORDER BY CREATED_AT DESC
+FETCH FIRST 5 ROWS ONLY;

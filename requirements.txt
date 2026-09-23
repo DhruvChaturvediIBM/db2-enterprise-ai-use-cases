@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# IBM Db2 AI Use Cases — Python dependencies
+# Install via:  bash install.sh   OR   pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── IBM Db2 driver ────────────────────────────────────────────────────────────
+ibm_db>=3.2.3
+ibm_db_sa>=0.4.0           # SQLAlchemy dialect for Db2
+
+# ── Haystack (with IBM Db2 integration) ──────────────────────────────────────
+haystack-ai>=2.6.0
+db2-haystack>=0.2.0        # Db2DocumentStore + Db2EmbeddingRetriever
+
+# ── LangChain (with IBM Db2 integration) ─────────────────────────────────────
+langchain>=0.3.0
+langchain-community>=0.3.0 # DB2VS VectorStore lives here
+langchain-ollama>=0.2.0    # Ollama LLM + embedding for LangChain
+
+# ── CrewAI ────────────────────────────────────────────────────────────────────
+crewai>=0.80.0
+crewai-tools>=0.14.0
+
+# ── Ollama Python client ──────────────────────────────────────────────────────
+ollama>=0.3.3
+
+# ── Embedding models ─────────────────────────────────────────────────────────
+sentence-transformers>=3.1.0
+
+# ── Reranking (UC05, UC06) ────────────────────────────────────────────────────
+# Haystack reranker components pull in sentence-transformers above
+# No extra packages needed for local Ollama reranking
+
+# ── Data / utilities ─────────────────────────────────────────────────────────
+python-dotenv>=1.0.1
+pandas>=2.2.0
+numpy>=1.26.0
+tqdm>=4.66.0
+rich>=13.7.0               # pretty console output
+
+# ── Evaluation ────────────────────────────────────────────────────────────────
+ragas>=0.1.21              # lightweight retrieval evaluation
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=8.3.0
