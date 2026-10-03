@@ -1,111 +1,297 @@
-# UC11 — Vector-Based Incident Discovery
+# UC11 — AI-Powered Incident Discovery with IBM Db2 + LangChain
 
-## Status
-> 🔲 Scope defined. Code not yet written. Review this README, suggest changes, then we implement.
+## What this example demonstrates
 
----
+This is an enterprise-style Python example built around the **IBM Db2 LangChain integration**.
 
-## Why this use case exists
+A new production incident is submitted as natural language. The application uses the official `langchain-db2` package and its `DB2VS` vector store to retrieve semantically similar historical incidents from IBM Db2.
 
-When a new production incident occurs, engineers spend valuable time searching Confluence, Slack, and PagerDuty history to find if this has happened before. This use case stores historical incidents with embeddings in IBM Db2 and enables instant semantic discovery — "have we seen this before?" answered in seconds, not hours.
+The workflow is:
 
-**College project framing:** Build an incident history search engine that finds similar past events from natural-language descriptions.  
-**Enterprise framing:** A first-responder tool that, the moment a new incident is declared, surfaces the top-3 historically similar incidents with their root causes and resolutions — reducing mean time to resolution (MTTR).
-
----
-
-## What it demonstrates
-
-| Capability | Detail |
-|---|---|
-| Framework | LangChain |
-| Db2 capability | `DB2VS`, `similarity_search_with_score()` |
-| Data | Incidents with: symptoms, service, root_cause, resolution, severity |
-| Output | Similar historical incidents + their resolutions |
-
-### Flow
-
-```
-New incident declared:
-  "Payment service returning 503 errors, Db2 connections failing"
-  │
-  ▼
-Embed incident description
-  │
-  ▼
-Db2 similarity search (k=3)
-  │
-  ▼
-Historical matches:
-  [0.94] INC-001: Connection pool exhaustion → Resolution: increase pool size
-  [0.71] INC-002: Auth failure after rotation → Resolution: restart token service
-  │
-  ▼
-Display: similar incidents, their root causes, resolutions
+```text
+New incident
+     |
+     v
+LangChain embedding model
+     |
+     v
+langchain_db2.DB2VS
+     |
+     v
+IBM Db2 vector search
+     |
+     v
+Top-K historical incidents
+     |
+     +--> severity
+     +--> service
+     +--> product
+     +--> root cause
+     +--> resolution
 ```
 
----
+The example uses the real `DB2VS` API. LangChain's current reference documents `DB2VS` as the IBM Db2 vector store, with `from_documents`, `add_texts`, `similarity_search`, `similarity_search_with_score`, MMR, and metadata filtering. Db2 vector support requires Db2 12.1.2 or later. citeturn1search1turn2view0
 
-## Scope
+## Why this is an enterprise use case
 
-- Populate `AI_DEMO.INCIDENTS` table with historical incident corpus from `common/sample_data.py`
-- Each incident stored as: concatenation of symptoms + root_cause + resolution (for rich embedding)
-- Implement `discover_similar_incidents(description: str, k: int = 3)`
-- Return: incident_id, title, severity, root_cause snippet, resolution snippet, score
-- Optionally filter by: service, severity
+When a production incident occurs, engineers often need to determine whether a similar incident happened before.
 
----
+Example:
 
-## How to try it (once code is written)
+```text
+Payment service returning 503 errors.
+Db2 connection wait time is high.
+```
+
+The application searches historical incidents by meaning rather than exact keywords and returns relevant root causes and resolutions.
+
+This is an **incident discovery/triage aid**, not an autonomous remediation system.
+
+## IBM Db2 package used
+
+Install the official LangChain integration:
 
 ```bash
-source .venv/bin/activate
-cd 11_incident_discovery
-python main.py
+pip install -U langchain-db2
 ```
 
-Built-in test scenarios:
-- `"Pods crashing with OOMKilled in healthcare namespace"` → INC-003
-- `"Database connection errors causing service failures"` → INC-001
-- `"Login failures after certificate update"` → INC-002
+The package exposes:
 
----
-
-## How to test it
-
-```bash
-python main.py --incident "service returning 503, DB2 connection wait time high"
-# Expected: INC-001 in top-2 (connection pool exhaustion)
+```python
+from langchain_db2 import DB2VS
 ```
 
-**SQL validation** (`validation.sql`):
-```sql
--- Confirm incidents table
-SELECT COUNT(*) FROM AI_DEMO.INCIDENTS;
+The current LangChain reference documents `DB2VS` version 1.0.0 and its constructor, including `embedding_function`, `table_name`, `client`, `distance_strategy`, and `connection_args`. citeturn1search1
 
--- Review incident metadata
-SELECT DOCUMENT_ID, TITLE, 
-       SUBSTR(CONTENT, 1, 100) AS CONTENT_PREVIEW
-FROM AI_DEMO.INCIDENTS
-ORDER BY EFFECTIVE_DATE DESC;
+## Features demonstrated
+
+### 1. Document ingestion
+
+Historical incidents are converted to LangChain `Document` objects and inserted with:
+
+```python
+DB2VS.from_documents(...)
 ```
 
----
+### 2. Semantic similarity search
 
-## Files (to be created)
+The application uses:
 
+```python
+vector_store.similarity_search_with_score(...)
 ```
+
+### 3. Metadata filtering
+
+Db2VS supports metadata filtering. This example exposes:
+
+```text
+--service Payment
+--severity SEV-1
+```
+
+and translates those into the DB2VS filter format.
+
+The LangChain Db2 documentation demonstrates filters such as:
+
+```python
+{"id": ["101"]}
+```
+
+with `similarity_search` and `similarity_search_with_score`. citeturn2view0
+
+### 4. Retrieval evaluation
+
+The example evaluates predefined incident queries with Top-1 accuracy and Top-3 recall.
+
+## Project structure
+
+```text
 11_incident_discovery/
 ├── README.md
-├── main.py           ← discovers similar incidents for a new description
-├── ingest.py         ← loads INCIDENTS corpus into AI_DEMO.INCIDENTS
-├── discovery.py      ← discover_similar_incidents() function
+├── requirements.txt
+├── config.py
+├── db.py
+├── embeddings.py
+├── sample_data.py
+├── ingest.py
+├── discovery.py
+├── main.py
+├── eval.py
 ├── validation.sql
-└── eval.py
+└── VALIDATION_README.md
 ```
 
----
+## Prerequisites
 
-## Enterprise impact
+- Python 3.10+
+- IBM Db2 12.1.2 or later with vector support
+- Network access to Db2
+- Db2 database/user credentials
+- Python environment capable of installing `ibm-db`
+- Local embedding model dependencies
 
-Turns historical operational knowledge stored in Db2 into reusable engineering memory. A direct, measurable enterprise value: engineers no longer start from zero when a recurring incident pattern appears. MTTR improves because the resolution playbook surfaces automatically.
+Db2 12.1.2+ and `langchain-db2` are documented prerequisites for this integration. citeturn2view0
+
+## Installation
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+The requirements use:
+
+```text
+langchain-db2
+langchain-huggingface
+langchain-community
+langchain-core
+ibm-db
+```
+
+The Db2 integration itself brings dependencies such as `langchain-core` and `ibm_db`; they are listed explicitly here to make the example environment easy to understand. citeturn2view0
+
+## Configuration
+
+Copy the example values into your shell:
+
+```bash
+export DB2_DATABASE="BLUDB"
+export DB2_HOST="localhost"
+export DB2_PORT="50000"
+export DB2_USER="db2inst1"
+export DB2_PASSWORD="password"
+export DB2_SCHEMA="AI_DEMO"
+export DB2_TABLE="INCIDENTS"
+```
+
+The application creates/uses the fully qualified table:
+
+```text
+AI_DEMO.INCIDENTS
+```
+
+Do not commit real credentials.
+
+## 1. Ingest the historical incidents
+
+```bash
+python ingest.py
+```
+
+The ingestion code uses:
+
+```python
+DB2VS.from_documents(
+    documents,
+    embeddings,
+    client=connection,
+    table_name="AI_DEMO.INCIDENTS",
+    distance_strategy=DistanceStrategy.COSINE,
+)
+```
+
+This follows the official integration pattern: create LangChain documents, create an embedding model, and initialize `DB2VS.from_documents(...)`. citeturn2view0
+
+## 2. Search for similar incidents
+
+```bash
+python main.py   --incident "Payment service returning 503 errors with high Db2 connection wait time"   --k 3
+```
+
+Built-in scenarios:
+
+```bash
+python main.py --scenario database
+python main.py --scenario authentication
+python main.py --scenario memory
+```
+
+## 3. Use metadata filters
+
+Example:
+
+```bash
+python main.py   --incident "Payment API is failing because database connections are saturated"   --service Payment   --severity SEV-1   --k 3
+```
+
+The search layer constructs a DB2VS filter rather than implementing a separate database query layer.
+
+## 4. Evaluate retrieval
+
+```bash
+python eval.py
+```
+
+The evaluation uses known relevant incident IDs and reports:
+
+```text
+Top-1 Accuracy
+Top-3 Recall
+```
+
+These metrics are only for the supplied demonstration corpus; they are not production-quality retrieval benchmarks.
+
+## 5. Validate the Db2 state
+
+Run:
+
+```text
+validation.sql
+```
+
+Then read:
+
+```text
+VALIDATION_README.md
+```
+
+The validation script intentionally checks the actual DB2VS table through Db2 catalog metadata rather than assuming a custom application schema.
+
+## Embeddings
+
+The example uses `HuggingFaceEmbeddings` from `langchain_huggingface` with:
+
+```text
+sentence-transformers/all-MiniLM-L6-v2
+```
+
+This keeps the example self-contained and avoids requiring a hosted embedding API.
+
+## Distance strategy
+
+The example uses:
+
+```python
+DistanceStrategy.COSINE
+```
+
+The Db2 LangChain integration documents support for dot product, cosine, and Euclidean distance strategies. citeturn2view0
+
+## Important design choice
+
+There is **no custom vector-store implementation** in this example.
+
+The only vector-store object is:
+
+```python
+from langchain_db2 import DB2VS
+```
+
+Application code calls the integration directly.
+
+This is important because the purpose of this use case is to show an AI developer how to consume the IBM Db2 package after installation.
+
+## Future extensions
+
+The same incident corpus could later be used with:
+
+- RAG over retrieved incidents
+- LangGraph incident workflows
+- Haystack + IBM Db2
+- CrewAI + IBM Db2
+- MMR retrieval for diverse historical incidents
+- similarity-score threshold retrieval
+- larger production incident datasets

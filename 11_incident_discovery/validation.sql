@@ -1,28 +1,50 @@
--- UC11: Vector-Based Incident Discovery — SQL Validation
+-- UC11: Db2VS SQL Validation
+--
+-- DB2VS creates/manages the vector-store table.
+-- This validation intentionally inspects the Db2 catalog instead of
+-- assuming the internal DB2VS column names beyond the table itself.
 
--- 1. Confirm incidents table is populated
+-- 1. Confirm the table exists.
+SELECT TABSCHEMA,
+       TABNAME,
+       TYPE
+FROM SYSCAT.TABLES
+WHERE TABSCHEMA = UPPER('AI_DEMO')
+  AND TABNAME = UPPER('INCIDENTS');
+
+-- 2. Confirm the table contains rows.
 SELECT COUNT(*) AS TOTAL_INCIDENTS
 FROM AI_DEMO.INCIDENTS;
 
--- 2. Review incident metadata
-SELECT DOCUMENT_ID, TITLE,
-       SUBSTR(CONTENT, 1, 100) AS CONTENT_PREVIEW,
-       EFFECTIVE_DATE
-FROM AI_DEMO.INCIDENTS
-ORDER BY EFFECTIVE_DATE DESC;
+-- 3. Inspect the actual columns created for the DB2VS vector store.
+SELECT COLNO,
+       COLNAME,
+       TYPENAME,
+       LENGTH,
+       SCALE,
+       NULLS
+FROM SYSCAT.COLUMNS
+WHERE TABSCHEMA = UPPER('AI_DEMO')
+  AND TABNAME = UPPER('INCIDENTS')
+ORDER BY COLNO;
 
--- 3. Severity distribution
-SELECT CLASSIFICATION AS SEVERITY_TAG, COUNT(*) AS COUNT
-FROM AI_DEMO.INCIDENTS
-GROUP BY CLASSIFICATION;
+-- 4. Confirm the table has a vector column.
+-- The exact column name is intentionally discovered from the catalog.
+SELECT COLNAME,
+       TYPENAME,
+       LENGTH
+FROM SYSCAT.COLUMNS
+WHERE TABSCHEMA = UPPER('AI_DEMO')
+  AND TABNAME = UPPER('INCIDENTS')
+  AND UPPER(TYPENAME) = 'VECTOR';
 
--- 4. Incidents by department (service domain)
-SELECT DEPARTMENT, PRODUCT, COUNT(*) AS COUNT
-FROM AI_DEMO.INCIDENTS
-GROUP BY DEPARTMENT, PRODUCT
-ORDER BY COUNT DESC;
+-- 5. Inspect Db2 table statistics.
+SELECT TABSCHEMA,
+       TABNAME,
+       CARD
+FROM SYSCAT.TABLES
+WHERE TABSCHEMA = UPPER('AI_DEMO')
+  AND TABNAME = UPPER('INCIDENTS');
 
--- 5. Confirm embeddings for all incidents
-SELECT COUNT(*) AS INCIDENTS_WITH_EMBEDDING
-FROM AI_DEMO.INCIDENTS
-WHERE EMBEDDING IS NOT NULL;
+-- 6. Verify that the table is owned by the expected schema.
+VALUES CURRENT SCHEMA;
