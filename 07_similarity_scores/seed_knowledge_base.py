@@ -9,7 +9,7 @@ already exist (DB2VS inserts are idempotent via SHA-256 primary key).
 
 Usage
 -----
-    cd 07_similarity_scores/07_similarity_scores
+    cd 07_similarity_scores
     python seed_knowledge_base.py
 """
 

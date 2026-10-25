@@ -239,8 +239,8 @@ The exact scores depend on the embedding model, stored documents, and Db2 distan
 The defaults are:
 
 ```text
-HIGH_MAX_DISTANCE=0.20
-MEDIUM_MAX_DISTANCE=0.45
+HIGH_MAX_DISTANCE=0.35
+MEDIUM_MAX_DISTANCE=0.52
 ```
 
 These values are starting points only.
