@@ -1,0 +1,32 @@
+-- UC08: MMR Diverse Retrieval - SQL Validation
+-- Run these statements in IBM Db2 Developer Extension.
+
+-- 1. Document type distribution.
+SELECT
+    DOCUMENT_TYPE,
+    COUNT(*) AS COUNT
+FROM AI_DEMO.KNOWLEDGE_BASE
+GROUP BY DOCUMENT_TYPE
+ORDER BY COUNT DESC;
+
+-- 2. Department distribution.
+SELECT
+    DEPARTMENT,
+    COUNT(*) AS COUNT
+FROM AI_DEMO.KNOWLEDGE_BASE
+GROUP BY DEPARTMENT
+ORDER BY COUNT DESC;
+
+-- 3. Corpus size.
+SELECT COUNT(*) AS TOTAL
+FROM AI_DEMO.KNOWLEDGE_BASE;
+
+-- 4. Sample diverse document titles.
+SELECT
+    DOCUMENT_ID,
+    DOCUMENT_TYPE,
+    DEPARTMENT,
+    TITLE
+FROM AI_DEMO.KNOWLEDGE_BASE
+ORDER BY DOCUMENT_TYPE, DOCUMENT_ID
+FETCH FIRST 20 ROWS ONLY;
