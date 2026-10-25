@@ -1,0 +1,5 @@
+langchain>=0.3
+langchain-ollama>=0.2
+langchain-db2
+ibm-db>=3.2
+python-dotenv>=1.0
