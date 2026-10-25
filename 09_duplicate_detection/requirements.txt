@@ -1,0 +1,7 @@
+langchain
+langchain-core
+langchain-db2
+langchain-community
+langchain-ollama
+ibm-db
+python-dotenv
