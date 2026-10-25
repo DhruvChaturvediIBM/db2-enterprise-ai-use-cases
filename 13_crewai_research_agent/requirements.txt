@@ -1,0 +1,9 @@
+crewai
+crewai-tools
+ibm-db>=3.2.9
+sentence-transformers
+ollama
+python-dotenv
+haystack-ai
+ibm-db-haystack
+sentence-transformers-haystack
