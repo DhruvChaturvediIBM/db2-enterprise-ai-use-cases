@@ -1,0 +1,5 @@
+langchain
+langchain-db2
+langchain-ollama
+python-dotenv
+ibm-db
