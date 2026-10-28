@@ -32,20 +32,32 @@ def build_documents() -> list[Document]:
 
 def ingest() -> None:
     connection = create_connection()
-    embeddings = create_embeddings()
-    documents = build_documents()
+    try:
+        embeddings = create_embeddings()
+        documents = build_documents()
 
-    print(f"Ingesting {len(documents)} incidents into {table_name()}...")
+        print(f"Ingesting {len(documents)} incidents into {table_name()}...")
 
-    DB2VS.from_documents(
-        documents,
-        embeddings,
-        client=connection,
-        table_name=table_name(),
-        distance_strategy=DistanceStrategy.COSINE,
-    )
+        # Assign stable IDs derived from incident_id so that re-running
+        # ingestion on an existing table does not create duplicate rows.
+        # If the target table already contains these IDs the behaviour
+        # depends on the DB2VS version: rows are either skipped or
+        # overwritten.  If you need a clean slate, drop the table first:
+        #   db2 "DROP TABLE <schema>.<table>"
+        ids = [doc.metadata["incident_id"] for doc in documents]
 
-    print("Incident ingestion complete.")
+        DB2VS.from_documents(
+            documents,
+            embeddings,
+            client=connection,
+            table_name=table_name(),
+            distance_strategy=DistanceStrategy.COSINE,
+            ids=ids,
+        )
+
+        print("Incident ingestion complete.")
+    finally:
+        connection.close()
 
 
 if __name__ == "__main__":

@@ -1,8 +1,21 @@
+from __future__ import annotations
+
+import os
+
 from langchain_db2 import DB2VS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
-HOST = "khushityagi463-5zh1k-x86.dev.fyre.ibm.com"
+
+def _required(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(
+            f"Missing required environment variable: {name}\n"
+            "Copy .env.example to .env and fill in your Db2 credentials."
+        )
+    return value
+
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -10,13 +23,13 @@ embeddings = HuggingFaceEmbeddings(
 
 vector_store = DB2VS(
     embedding_function=embeddings,
-    table_name="KHUSHIID.DB2VS_SMOKE_TEST",
+    table_name=f"{_required('DB2_SCHEMA')}.DB2VS_SMOKE_TEST",
     connection_args={
-        "database": "AIDEMO",
-        "host": HOST,
-        "port": "50000",
-        "username": "KHUSHIID",
-        "password": "Vmlogin@123",
+        "database": _required("DB2_DATABASE"),
+        "host": _required("DB2_HOST"),
+        "port": os.getenv("DB2_PORT", "50000"),
+        "username": _required("DB2_USER"),
+        "password": _required("DB2_PASSWORD"),
     },
 )
 
