@@ -22,15 +22,16 @@ section "1 / 6 — Checking Python version"
 # ─────────────────────────────────────────────────────────────────────────────
 PYTHON=$(command -v python3 || command -v python || true)
 if [[ -z "$PYTHON" ]]; then
-  error "Python 3.10+ is required but was not found. Install from https://www.python.org/"
+  error "Python 3.11+ is required but was not found. Install from https://www.python.org/"
 fi
 
 PY_VERSION=$("$PYTHON" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
 PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
 
-if [[ "$PY_MAJOR" -lt 3 ]] || { [[ "$PY_MAJOR" -eq 3 ]] && [[ "$PY_MINOR" -lt 10 ]]; }; then
-  error "Python 3.10+ required. Found $PY_VERSION"
+# ibm-db-haystack (official Haystack Db2 integration) requires Python 3.11+
+if [[ "$PY_MAJOR" -lt 3 ]] || { [[ "$PY_MAJOR" -eq 3 ]] && [[ "$PY_MINOR" -lt 11 ]]; }; then
+  error "Python 3.11+ required. Found $PY_VERSION"
 fi
 info "Python $PY_VERSION ✓"
 
@@ -81,7 +82,7 @@ info "ibm_db ✓"
 section "4 / 6 — Installing AI frameworks (Haystack, LangChain, CrewAI)"
 # ─────────────────────────────────────────────────────────────────────────────
 info "Installing Haystack + IBM Db2 integration..."
-pip install --quiet "haystack-ai>=2.6.0" "db2-haystack>=0.2.0"
+pip install --quiet "haystack-ai>=2.28.0" "ibm-db-haystack>=1.0.0" ollama-haystack
 info "Haystack ✓"
 
 info "Installing LangChain + IBM Db2 integration + Ollama connector..."
