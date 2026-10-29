@@ -33,7 +33,7 @@ IBM Db2
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+ (required by the official `ibm-db-haystack` integration)
 - IBM Db2 (IBM FyRe or local Docker)
 - [Ollama](https://ollama.com/) with `granite3.1-dense:8b` pulled (used as the primary LLM)
 - IBM VPN (if connecting to FyRe)

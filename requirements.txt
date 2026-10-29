@@ -8,8 +8,10 @@ ibm_db>=3.2.3
 ibm_db_sa>=0.4.0           # SQLAlchemy dialect for Db2
 
 # ── Haystack (with IBM Db2 integration) ──────────────────────────────────────
-haystack-ai>=2.6.0
-db2-haystack>=0.2.0        # Db2DocumentStore + Db2EmbeddingRetriever
+# Official deepset integration; requires Python 3.11+
+haystack-ai>=2.28.0
+ibm-db-haystack>=1.0.0     # IBMDb2DocumentStore + IBMDb2EmbeddingRetriever
+ollama-haystack            # OllamaTextEmbedder / OllamaDocumentEmbedder / OllamaChatGenerator
 
 # ── LangChain (with IBM Db2 integration) ─────────────────────────────────────
 langchain>=0.3.0

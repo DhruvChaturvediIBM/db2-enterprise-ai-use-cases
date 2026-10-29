@@ -1,0 +1,8 @@
+# UC01 - Enterprise Knowledge Assistant (Haystack + IBM Db2)
+# ibm-db-haystack requires Python 3.11+
+ibm-db-haystack>=1.0.0     # IBMDb2DocumentStore + IBMDb2EmbeddingRetriever (official deepset integration)
+haystack-ai>=2.28.0
+ollama-haystack            # OllamaTextEmbedder, OllamaDocumentEmbedder, OllamaChatGenerator
+ibm-db>=3.2.8
+python-dotenv>=1.0.1
+rich>=13.7.0
